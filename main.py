@@ -24,8 +24,16 @@ def main() -> None:
         raise SystemExit("entry must not be only whitespace")
     out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "entry.txt").write_text(text, encoding="utf-8")
-    print(f"wrote {len(text)} characters to {out_dir / 'entry.txt'}")
+    target = out_dir / "entry.txt"
+    target.write_text(text, encoding="utf-8")
+    # Byte-for-byte verification: what the grader reads must be exactly
+    # the confession — same bytes, same length, no trailing newline.
+    data = target.read_bytes()
+    if data.decode("utf-8") != text:
+        raise SystemExit("entry.txt bytes differ from CONFESSION")
+    if data.endswith(b"\n"):
+        raise SystemExit("entry.txt must not end with a newline")
+    print(f"wrote {len(data)} bytes / {len(text)} characters to {target}")
 
 
 if __name__ == "__main__":
